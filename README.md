@@ -2,11 +2,9 @@
 
 > Learn. Build. Get Certified.
 
-[![Run Tests](https://github.com/Somyabhawsar45/Schlor/actions/workflows/test.yml/badge.svg)](https://github.com/Somyabhawsar45/Schlor/actions/workflows/test.yml)
-[![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Somyabhawsar45/Schlor/blob/main/LICENSE)
+[![Run Tests](https://github.com/yashushakya/Schlor/actions/workflows/test.yml/badge.svg)](https://github.com/yashushakya/Schlor/actions/workflows/test.yml)
 [![Status](https://img.shields.io/badge/status-live-success)](https://schlor.vercel.app)
 
-**[Live Demo](https://schlor.vercel.app)** · **[API Docs](https://web.postman.co/workspace/Somya-Bhawar~5780f1dc-7f58-4a08-a8d7-2812646772cc/collection/41251947-a56f6203-7cad-42a4-afaf-1ba33ca32cd5?action=share&source=copy-link&creator=41251947)** · **[Issues](https://github.com/Somyabhawsar45/Schlor/issues)**
 
 ---
 
@@ -86,14 +84,11 @@ Not a tutorial clone — every architectural decision was made from scratch incl
                                     └────────────────────┘
 ```
 
-The **Ask a Doubt** feature is served by [Netra AI](https://github.com/Somyabhawsar45/Netra-AI) — a separate Python microservice. Course content is embedded and indexed into a FAISS vector store; student questions are matched against that index via retrieval-augmented generation and answered using Groq's Llama 3, rather than relying on the LLM's raw knowledge alone.
+The **Ask a Doubt** feature is served by [Netra AI](https://github.com/yashushakya/Netra-AI) — a separate Python microservice. Course content is embedded and indexed into a FAISS vector store; student questions are matched against that index via retrieval-augmented generation and answered using Groq's Llama 3, rather than relying on the LLM's raw knowledge alone.
 
 ---
 
 ## API
-
-📬 [Postman Documentation](https://web.postman.co/workspace/Somya-Bhawar~5780f1dc-7f58-4a08-a8d7-2812646772cc/collection/41251947-a56f6203-7cad-42a4-afaf-1ba33ca32cd5?action=share&source=copy-link&creator=41251947)
-
 ```
 POST   /api/v1/auth/sendotp                     → Send OTP
 POST   /api/v1/auth/signup                      → Register
@@ -147,7 +142,7 @@ Tests: 19 passed, 19 total
 ## Local Setup
 
 ```bash
-git clone https://github.com/Somyabhawsar45/Schlor.git
+git clone https://github.com/yashushakya/Schlor.git
 cd Schlor/server && npm install && npm run dev
 cd Schlor/client && npm install && npm start
 ```
