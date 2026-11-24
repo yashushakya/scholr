@@ -70,7 +70,19 @@ exports.downloadCertificate = async (req, res) => {
       certificateId: certificate.certificateId,
     })
 
-    browser = await puppeteer.launch({
+    // browser = await puppeteer.launch({
+    //   args: chromium.args,
+    //   defaultViewport: chromium.defaultViewport,
+    //   executablePath: await chromium.executablePath(),
+    //   headless: chromium.headless,
+    // })
+    browser = process.env.CHROME_PATH
+  ? await puppeteer.launch({
+      executablePath: process.env.CHROME_PATH,
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    })
+  : await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),

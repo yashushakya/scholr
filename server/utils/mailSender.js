@@ -5,7 +5,7 @@ const mailSender = async (email, title, body) => {
     const response = await axios.post(
       "https://api.brevo.com/v3/smtp/email",
       {
-        sender: { name: "Scholr | Somya", email: "somyabhawsar194@gmail.com" },
+        sender: { name: "Scholr | Yashu", email: "yashushakya2005@gmail.com" },
         to: [{ email: email }],
         subject: title,
         htmlContent: body,
