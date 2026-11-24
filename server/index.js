@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ("https://scholr-9yus.vercel.app","http://localhost:3000"),
+    origin: ["https://scholr-9yus.vercel.app", "http://localhost:3000"],
     credentials: true,
   })
 );
