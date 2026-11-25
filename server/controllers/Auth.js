@@ -6,7 +6,45 @@ const otpGenerator = require("otp-generator")
 const mailSender = require("../utils/mailSender")
 const { passwordUpdated } = require("../mail/templates/passwordUpdate")
 const Profile = require("../models/Profile")
+const crypto = require("crypto")
 require("dotenv").config()
+
+// Sessions auto-expire after 3 days (token, server record and cookie agree)
+const SESSION_TTL_MS = 3 * 24 * 60 * 60 * 1000
+
+// Short human-readable device label from a User-Agent string
+const describeDevice = (ua = "") => {
+  const browser =
+    /Edg\//.test(ua) ? "Edge"
+    : /OPR\//.test(ua) ? "Opera"
+    : /Chrome\//.test(ua) ? "Chrome"
+    : /Firefox\//.test(ua) ? "Firefox"
+    : /Safari\//.test(ua) ? "Safari"
+    : "Unknown browser"
+  const os =
+    /Windows/.test(ua) ? "Windows"
+    : /Android/.test(ua) ? "Android"
+    : /iPhone|iPad/.test(ua) ? "iOS"
+    : /Mac OS/.test(ua) ? "macOS"
+    : /Linux/.test(ua) ? "Linux"
+    : "Unknown OS"
+  return `${browser} on ${os}`
+}
+
+// Logout: end the current session so the account can be used on any device
+exports.logout = async (req, res) => {
+  try {
+    await User.updateOne(
+      { _id: req.user.id, activeSessionId: req.user.sid },
+      { $unset: { activeSessionId: 1, activeSessionExpires: 1, activeSessionDevice: 1 } }
+    )
+    res.clearCookie("token")
+    return res.status(200).json({ success: true, message: "Logged out" })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ success: false, message: "Logout failed" })
+  }
+}
 
 // Signup Controller for Registering USers
 
@@ -116,7 +154,7 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     // Get email and password from request body
-    const { email, password } = req.body
+    const { email, password, forceLogout } = req.body
 
     // Check if email or password is missing
     if (!email || !password) {
@@ -141,20 +179,45 @@ exports.login = async (req, res) => {
 
     // Generate JWT token and Compare Password
     if (await bcrypt.compare(password, user.password)) {
+      // Single-device login: if another live session exists, the user must
+      // explicitly confirm (forceLogout) to end it from this device.
+      // A session that has passed its expiry no longer counts as live.
+      const hasLiveSession =
+        user.activeSessionId &&
+        user.activeSessionExpires &&
+        user.activeSessionExpires > new Date()
+      if (hasLiveSession && !forceLogout) {
+        return res.status(409).json({
+          success: false,
+          code: "ALREADY_LOGGED_IN",
+          message:
+            "This account is already logged in on another device. Log out from that device to continue?",
+          device: user.activeSessionDevice || "another device",
+        })
+      }
+
+      const sessionId = crypto.randomUUID()
       const token = jwt.sign(
-        { email: user.email, id: user._id, role: user.role },
+        { email: user.email, id: user._id, role: user.role, sid: sessionId },
         process.env.JWT_SECRET,
+        { expiresIn: Math.floor(SESSION_TTL_MS / 1000) }
+      )
+
+      // Replacing activeSessionId invalidates the previous device's token
+      await User.updateOne(
+        { _id: user._id },
         {
-          expiresIn: "24h",
+          activeSessionId: sessionId,
+          activeSessionExpires: new Date(Date.now() + SESSION_TTL_MS),
+          activeSessionDevice: describeDevice(req.headers["user-agent"]),
         }
       )
 
-      // Save token to user document in database
       user.token = token
       user.password = undefined
       // Set cookie for token and return success response
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + SESSION_TTL_MS),
         httpOnly: true,
       }
       res.cookie("token", token, options).status(200).json({
