@@ -8,6 +8,7 @@ const {
   signup,
   sendotp,
   changePassword,
+  logout,
 } = require("../controllers/Auth")
 const {
   resetPasswordToken,
@@ -24,6 +25,9 @@ const { auth } = require("../middleware/auth")
 
 // Route for user login
 router.post("/login", login)
+
+// Route for user logout (clears the active session)
+router.post("/logout", auth, logout)
 
 // Route for user signup
 router.post("/signup", signup)

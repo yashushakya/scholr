@@ -55,6 +55,16 @@ const userSchema = new mongoose.Schema(
     token: {
       type: String,
     },
+    // Single-device login: only the session whose id matches is valid
+    activeSessionId: {
+      type: String,
+    },
+    activeSessionExpires: {
+      type: Date,
+    },
+    activeSessionDevice: {
+      type: String,
+    },
     resetPasswordExpires: {
       type: Date,
     },

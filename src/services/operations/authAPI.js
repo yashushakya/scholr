@@ -10,6 +10,7 @@ const {
   SENDOTP_API,
   SIGNUP_API,
   LOGIN_API,
+  LOGOUT_API,
   RESETPASSTOKEN_API,
   RESETPASSWORD_API,
 } = endpoints
@@ -83,7 +84,13 @@ export function signUp(
   }
 }
 
-export function login(email, password, navigate) {
+export function login(
+  email,
+  password,
+  navigate,
+  forceLogout = false,
+  onAlreadyLoggedIn
+) {
   return async (dispatch) => {
     const toastId = toast.loading("Loading...")
     dispatch(setLoading(true))
@@ -91,6 +98,7 @@ export function login(email, password, navigate) {
       const response = await apiConnector("POST", LOGIN_API, {
         email,
         password,
+        forceLogout,
       })
 
       console.log("LOGIN API RESPONSE............", response)
@@ -109,7 +117,12 @@ localStorage.setItem("token", response.data.token)
       navigate("/dashboard/my-profile")
     } catch (error) {
       console.log("LOGIN API ERROR............", error)
-      toast.error("Login Failed")
+      if (error?.response?.data?.code === "ALREADY_LOGGED_IN") {
+        // Ask the user whether to log out of the other device from here
+        if (onAlreadyLoggedIn) onAlreadyLoggedIn(error.response.data.device)
+      } else {
+        toast.error("Login Failed")
+      }
     }
     dispatch(setLoading(false))
     toast.dismiss(toastId)
@@ -171,7 +184,18 @@ export function resetPassword(password, confirmPassword, token, navigate) {
 }
 
 export function logout(navigate) {
-  return (dispatch) => {
+  return async (dispatch) => {
+    // End the server-side session so the account can be used elsewhere
+    try {
+      const token = localStorage.getItem("token")
+      if (token) {
+        await apiConnector("POST", LOGOUT_API, null, {
+          Authorization: `Bearer ${token}`,
+        })
+      }
+    } catch (error) {
+      console.log("LOGOUT API ERROR............", error)
+    }
     dispatch(setToken(null))
     dispatch(setUser(null))
     dispatch(resetCart())

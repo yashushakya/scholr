@@ -136,4 +136,58 @@ describe('🔐 Auth Routes', () => {
       expect(res.statusCode).toBe(400)
     })
   })
+
+  describe('Single-device login', () => {
+    const creds = { email: 'single@test.com', password: 'Test@1234' }
+    const login = (extra = {}) =>
+      request(app).post('/api/v1/auth/login').send({ ...creds, ...extra })
+
+    beforeEach(async () => {
+      await signupUser(creds.email, 'Student')
+    })
+
+    it('should ask for confirmation when already logged in elsewhere', async () => {
+      await login()
+      const res = await login()
+      expect(res.statusCode).toBe(409)
+      expect(res.body.code).toBe('ALREADY_LOGGED_IN')
+    })
+
+    it('should not reveal session state for a wrong password', async () => {
+      await login()
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: creds.email, password: 'wrong' })
+      expect(res.statusCode).toBe(401)
+    })
+
+    it('forceLogout should invalidate the previous device token', async () => {
+      const first = await login()
+      const second = await login({ forceLogout: true })
+      expect(second.statusCode).toBe(200)
+
+      const old = await request(app)
+        .post('/api/v1/auth/changepassword')
+        .set('Authorization', `Bearer ${first.body.token}`)
+        .send({ oldPassword: 'x', newPassword: 'y' })
+      expect(old.statusCode).toBe(401)
+      expect(old.body.code).toBe('SESSION_REPLACED')
+
+      const current = await request(app)
+        .post('/api/v1/auth/changepassword')
+        .set('Authorization', `Bearer ${second.body.token}`)
+        .send({ oldPassword: 'x', newPassword: 'y' })
+      expect(current.body.code).not.toBe('SESSION_REPLACED')
+    })
+
+    it('logout should allow login from another device without prompt', async () => {
+      const first = await login()
+      const out = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${first.body.token}`)
+      expect(out.statusCode).toBe(200)
+      const again = await login()
+      expect(again.statusCode).toBe(200)
+    })
+  })
 })

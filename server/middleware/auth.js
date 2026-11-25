@@ -18,7 +18,29 @@ exports.auth = async (req, res, next) => {
       const decode = await jwt.verify(token, process.env.JWT_SECRET);  // ← fixed
       req.user = decode;
     } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
+          success: false,
+          code: "SESSION_EXPIRED",
+          message: "Your session expired. Please log in again.",
+        });
+      }
       return res.status(401).json({ success: false, message: "token is invalid" });
+    }
+
+    // Single-device login: the token's session id must be the user's current one
+    const account = await User.findById(req.user.id).select(
+      "activeSessionId"
+    );
+    if (!account) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+    if (account.activeSessionId && account.activeSessionId !== req.user.sid) {
+      return res.status(401).json({
+        success: false,
+        code: "SESSION_REPLACED",
+        message: "You were logged out because your account was used on another device.",
+      });
     }
 
     next();

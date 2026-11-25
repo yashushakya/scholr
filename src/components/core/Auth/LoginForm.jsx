@@ -1,9 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import { useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 
 import { login } from "../../../services/operations/authAPI"
+import ConfirmationModal from "../../Common/ConfirmationModal"
 
 function LoginForm() {
   const navigate = useNavigate()
@@ -14,6 +16,16 @@ function LoginForm() {
   })
 
   const [showPassword, setShowPassword] = useState(false)
+  const [confirmationModal, setConfirmationModal] = useState(null)
+
+  // Tell the user why they were signed out of this device
+  useEffect(() => {
+    const msg = sessionStorage.getItem("sessionReplacedMsg")
+    if (msg) {
+      toast.error(msg)
+      sessionStorage.removeItem("sessionReplacedMsg")
+    }
+  }, [])
 
   const { email, password } = formData
 
@@ -26,7 +38,21 @@ function LoginForm() {
 
   const handleOnSubmit = (e) => {
     e.preventDefault()
-    dispatch(login(email, password, navigate))
+    dispatch(
+      login(email, password, navigate, false, (device) =>
+        setConfirmationModal({
+          text1: "Already logged in on another device",
+          text2: `Your account is active on ${device}. Log out from that device and continue here?`,
+          btn1Text: "Log out & continue",
+          btn2Text: "Cancel",
+          btn1Handler: () => {
+            setConfirmationModal(null)
+            dispatch(login(email, password, navigate, true))
+          },
+          btn2Handler: () => setConfirmationModal(null),
+        })
+      )
+    )
   }
 
   return (
@@ -83,6 +109,7 @@ function LoginForm() {
       >
         Sign In
       </button>
+      {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </form>
   )
 }
