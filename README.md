@@ -2,9 +2,14 @@
 
 > Learn. Build. Get Certified.
 
+<<<<<<< HEAD
 [![Run Tests](https://github.com/yashushakya/Schlor/actions/workflows/test.yml/badge.svg)](https://github.com/yashushakya/Schlor/actions/workflows/test.yml)
 [![Status](https://img.shields.io/badge/status-live-success)](https://schlor.vercel.app)
 
+=======
+
+**[Live Demo](https://schlor.vercel.app)** ·
+>>>>>>> 2358c88 (first commit)
 
 ---
 
@@ -84,11 +89,21 @@ Not a tutorial clone — every architectural decision was made from scratch incl
                                     └────────────────────┘
 ```
 
+<<<<<<< HEAD
 The **Ask a Doubt** feature is served by [Netra AI](https://github.com/yashushakya/Netra-AI) — a separate Python microservice. Course content is embedded and indexed into a FAISS vector store; student questions are matched against that index via retrieval-augmented generation and answered using Groq's Llama 3, rather than relying on the LLM's raw knowledge alone.
+=======
+
+>>>>>>> 2358c88 (first commit)
 
 ---
 
 ## API
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 2358c88 (first commit)
 ```
 POST   /api/v1/auth/sendotp                     → Send OTP
 POST   /api/v1/auth/signup                      → Register
@@ -118,7 +133,7 @@ PASS  tests/auth.test.js
 PASS  tests/course.test.js
 PASS  tests/certificate.test.js
 
-Tests: 19 passed, 19 total
+Tests: 19 passed, 19 total.
 ```
 
 ---
@@ -139,6 +154,7 @@ Tests: 19 passed, 19 total
 
 ---
 
+<<<<<<< HEAD
 ## Local Setup
 
 ```bash
@@ -152,3 +168,11 @@ cd Schlor/client && npm install && npm start
 ## License
 
 MIT © [Yashu Shakya](https://github.com/yashushakya2005)
+=======
+
+
+
+## License
+
+MIT © [Abhay raj verma](https://github.com/Somyabhawsar45)
+>>>>>>> 2358c88 (first commit)
