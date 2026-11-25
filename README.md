@@ -119,7 +119,7 @@ GET    /api/v1/certificate/check/:courseId      → Check eligibility
 GET    /api/v1/certificate/download/:courseId   → Download PDF
 GET    /api/v1/certificate/verify/:id           → Public verify
 ```
-...
+
 ---
 
 ## Tests
