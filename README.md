@@ -135,6 +135,7 @@ PASS  tests/certificate.test.js
 
 Tests: 19 passed, 19 total.
 ```
+...
 
 ---
 
